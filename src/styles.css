@@ -57,11 +57,39 @@
   --glow: 0 0 18px color-mix(in oklab, var(--accent) 8%, transparent);
   --gradient-ml: linear-gradient(135deg, var(--ml), color-mix(in oklab, var(--ml) 50%, var(--accent)));
   --gauge: linear-gradient(90deg, var(--safe), var(--warn) 60%, var(--danger));
+  --cursor-default: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M3%202l7%2019%202.6-7.4L20%2011z%22%20fill%3D%22%2300c8ff%22%20stroke%3D%22%230b0f17%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") 3 2, default;
+  --cursor-pointer: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2228%22%20height%3D%2228%22%20viewBox%3D%220%200%2028%2028%22%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%228%22%20fill%3D%22none%22%20stroke%3D%22%230b0f17%22%20stroke-width%3D%224%22/%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%228%22%20fill%3D%22none%22%20stroke%3D%22%2300c8ff%22%20stroke-width%3D%222%22/%3E%3Cpath%20d%3D%22M14%201v6M14%2021v6M1%2014h6M21%2014h6%22%20stroke%3D%22%2300c8ff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%222%22%20fill%3D%22%2300c8ff%22/%3E%3C/svg%3E") 14 14, pointer;
+}
+
+/* Light theme: html.light overrides the dark defaults. */
+html.light {
+  --background: oklch(0.975 0.006 250);
+  --panel: oklch(0.995 0.002 250);
+  --card: oklch(1 0 0);
+  --border: oklch(0.88 0.015 255);
+  --foreground: oklch(0.22 0.03 265);
+  --muted: oklch(0.5 0.03 260);
+  --accent: oklch(0.55 0.15 235);
+  --grid-line: oklch(0.8 0.03 250);
+  --safe: oklch(0.55 0.16 155);
+  --danger: oklch(0.57 0.23 15);
+  --warn: oklch(0.62 0.15 60);
+  --ml: oklch(0.52 0.22 310);
+  --gold: oklch(0.68 0.15 85);
+  --terminal: oklch(0.965 0.008 250);
+  --glow: 0 4px 18px color-mix(in oklab, var(--accent) 15%, transparent);
+  --cursor-default: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M3%202l7%2019%202.6-7.4L20%2011z%22%20fill%3D%22%230f172a%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") 3 2, default;
+  --cursor-pointer: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2228%22%20height%3D%2228%22%20viewBox%3D%220%200%2028%2028%22%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%228%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%224%22/%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%228%22%20fill%3D%22none%22%20stroke%3D%22%230369a1%22%20stroke-width%3D%222%22/%3E%3Cpath%20d%3D%22M14%201v6M14%2021v6M1%2014h6M21%2014h6%22%20stroke%3D%22%230369a1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%222%22%20fill%3D%22%230369a1%22/%3E%3C/svg%3E") 14 14, pointer;
 }
 
 @layer base {
   * { border-color: var(--color-border); }
   html { color-scheme: dark; }
+  html.light { color-scheme: light; }
+  html, body { cursor: var(--cursor-default); }
+  a, button, [role="button"], label, select, summary, input[type="checkbox"], .recharts-bar-rectangle, .recharts-dot { cursor: var(--cursor-pointer); }
+  button:disabled { cursor: not-allowed; }
+  input[type="text"], input:not([type]), textarea { cursor: text; }
   body {
     background-color: var(--background);
     color: var(--foreground);
@@ -153,7 +181,7 @@
 }
 
 /* --- red/blue lab --- */
-@utility terminal { background: var(--terminal); box-shadow: inset 0 0 24px oklch(0 0 0 / 60%); }
+@utility terminal { background: var(--terminal); box-shadow: inset 0 0 24px color-mix(in oklab, var(--foreground) 12%, transparent); }
 @utility packet {
   position: absolute; top: 50%; left: 8%; width: 10px; height: 10px; margin-top: -5px; border-radius: 9999px;
   background: var(--accent); box-shadow: 0 0 10px var(--accent);
@@ -177,7 +205,7 @@
 @utility demo-bar {
   background: color-mix(in oklab, var(--terminal) 85%, transparent);
   backdrop-filter: blur(8px);
-  box-shadow: 0 -8px 30px oklch(0 0 0 / 50%);
+  box-shadow: 0 -8px 30px color-mix(in oklab, var(--foreground) 20%, transparent);
 }
 @keyframes slide-up { from { transform: translateY(100%) } to { transform: none } }
 @utility animate-slide-up { animation: slide-up 250ms ease-out both; }
