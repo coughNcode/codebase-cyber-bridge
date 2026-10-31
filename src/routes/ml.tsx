@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { Brain } from "lucide-react";
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, Legend, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { FEATURES, FEATURE_THRESHOLDS, FEATURE_WEIGHTS, featureVector } from "@/lib/mock";
@@ -124,7 +125,7 @@ function FeatureTip({ active, payload, radar }: TipProps) {
 
 function ConfidenceCard({ lastRetrain, now }: { lastRetrain: number | null | undefined; now: number }) {
   const attack = 38, legit = 9, total = attack + legit;
-  const rows: [string, React.ReactNode][] = [
+  const rows: [string, ReactNode][] = [
     ["Training samples", total],
     ["Attack recall", <span className="text-safe">100%</span>],
     ["False positive rate", <span className="text-safe">0%</span>],
