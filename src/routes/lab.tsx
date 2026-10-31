@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useState } from "react";
-import { Loader2, Swords, Trophy } from "lucide-react";
+import { Loader2, ShieldCheck, Swords, Trophy } from "lucide-react";
 import { ATTACKS } from "@/lib/mock";
 import { postRetrain } from "@/lib/api";
 import { useStore } from "@/lib/store";
@@ -36,8 +36,12 @@ export function simulate(id: string, hot: boolean): BenchmarkRow {
   };
 }
 
+function logLines(r: BenchmarkRow) {
+  return [`> firing: ${r.attack}...`, `  [${r.result}] ${ATTACKS.find((a) => a.id === r.attack)?.reason ?? r.reason} -- ${r.latency}ms`];
+}
+
 export function tierFor(caught: number) {
-  if (caught >= 10) return { label: "S-TIER", cls: "text-gold border-gold/60 animate-tier" };
+  if (caught >= 10) return { label: "S-TIER", cls: "text-gold border-gold/60 shadow-[0_0_14px_var(--gold)]" };
   if (caught >= 8) return { label: "A-TIER", cls: "text-safe border-safe/60" };
   if (caught >= 6) return { label: "B-TIER", cls: "text-warn border-warn/60" };
   return { label: "NEEDS WORK", cls: "text-danger border-danger/60" };
@@ -53,11 +57,17 @@ function Lab() {
   const [retrain, setRetrain] = useState<number | null>(null);
   const hot = mlPhase === "HOT";
 
+  const [shot, setShot] = useState<{ k: number; phase: "fly" | "BLOCKED" | "PASSED" } | null>(null);
   const fire = async () => {
     setFiring(true);
-    await sleep(300);
+    const k = Date.now();
+    setShot({ k, phase: "fly" });
+    await sleep(400);
     const r = simulate(sel, hot);
-    setLog((l) => [`=> ${r.attack} ... ${r.result} [${r.latency}ms]`, ...l].slice(0, 30));
+    setShot({ k, phase: r.result });
+    setLog((l) => [...l, ...logLines(r)].slice(-40));
+    await sleep(450);
+    setShot(null);
     setFiring(false);
   };
 
@@ -67,12 +77,12 @@ function Lab() {
     setLog([]);
     const rows: BenchmarkRow[] = [];
     for (let i = 0; i < ATTACKS.length; i++) {
-      setLog((l) => [...l, `$ fire ${ATTACKS[i]!.id}`]);
-      await sleep(350);
+      setLog((l) => [...l, `> firing: ${ATTACKS[i]!.id}...`]);
+      await sleep(150);
       const r = simulate(ATTACKS[i]!.id, hot);
       rows.push(r);
       setBenchmark([...rows]);
-      setLog((l) => [...l, `  ${r.result === "BLOCKED" ? "✓ BLOCKED" : "✗ PASSED"} ${r.reason} [${r.latency}ms]`]);
+      setLog((l) => [...l, logLines(r)[1]!]);
       setProgress(((i + 1) / ATTACKS.length) * 100);
     }
     setRunning(false);
@@ -109,18 +119,25 @@ function Lab() {
               </button>
             ))}
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="relative mt-4 h-12 overflow-hidden rounded border bg-background">
+            <div className="absolute inset-y-0 left-1/2 w-px bg-border" />
+            <ShieldCheck key={shot && shot.phase !== "fly" ? `${shot.k}-${shot.phase}` : "idle"} className={clsx("absolute left-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 text-accent", shot?.phase === "BLOCKED" && "animate-shield-red", shot?.phase === "PASSED" && "animate-shield-amber")} />
+            {shot && (
+              <span key={`${shot.k}-${shot.phase}`} className={clsx("packet", shot.phase === "fly" ? "animate-packet-fly" : shot.phase === "BLOCKED" ? "animate-packet-shatter" : "animate-packet-pass")} />
+            )}
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <Btn tone="danger" className="py-3" onClick={fire} disabled={firing || running}>
               {firing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}Fire Single Attack
             </Btn>
             <Btn tone="ml" className="py-3" onClick={bench} disabled={running}>Run Full Benchmark (10/10)</Btn>
           </div>
           {(running || progress > 0) && <div className="mt-3"><Progress value={progress} tone="ml" /></div>}
-          <div className="mt-3 h-48 overflow-y-auto rounded border bg-background p-3 font-mono text-[11px] leading-5">
-            {log.length ? log.map((l, i) => <div key={i} className={l.includes("PASSED") ? "text-danger" : l.includes("BLOCKED") ? "text-safe" : "text-muted-foreground"}>{l}</div>) : <span className="text-muted-foreground">// attack log empty</span>}
+          <div ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }} className="terminal mt-3 h-48 overflow-y-auto whitespace-pre rounded border p-3 font-mono text-[11px] leading-5">
+            {log.length ? log.map((l, i) => <div key={i} className={l.includes("[PASSED]") ? "text-danger" : l.includes("[BLOCKED]") ? "text-safe" : "text-muted-foreground"}>{l}</div>) : <span className="text-muted-foreground">// attack log empty</span>}
           </div>
         </Card>
-        <Card title="Security Scorecard" icon={<Trophy className="h-3.5 w-3.5 text-accent" />} right={done && <span className={clsx("rounded border px-2 py-0.5 font-mono text-xs font-bold", tier.cls)}>{tier.label}</span>}>
+        <Card title="Security Scorecard" icon={<Trophy className="h-3.5 w-3.5 text-accent" />} right={done && <span className={clsx("animate-tier-pop inline-block rounded border px-2 py-0.5 font-mono text-xs font-bold", tier.cls)}>{tier.label}</span>}>
           <div className="text-center">
             <div className="font-mono text-6xl font-semibold text-accent">{Math.round(shown)}/10</div>
             <div className="mt-2 flex justify-center gap-4 font-mono text-[11px] text-muted-foreground">
@@ -135,7 +152,7 @@ function Lab() {
             </thead>
             <tbody>
               {benchmark.map((r) => (
-                <tr key={r.attack} className={clsx("animate-slide-in border-b", r.result === "BLOCKED" ? "text-safe" : "bg-danger/10 text-danger")}>
+                <tr key={r.attack} className={clsx("animate-row-in border-b", r.result === "BLOCKED" ? "text-safe" : "bg-danger/10 text-danger")}>
                   <td className="py-1.5">{r.attack}</td><td>{r.result}</td><td>{r.latency}ms</td><td>{r.reason}</td><td><MLChip score={r.ml} /></td>
                 </tr>
               ))}
