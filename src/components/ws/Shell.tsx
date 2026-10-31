@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useEffect, useState, type ReactNode } from "react";
-import { Activity, Brain, Copy, LayoutDashboard, Monitor, ScrollText, Settings, Shield, ShieldCheck, Swords, X } from "lucide-react";
+import { Activity, Brain, Copy, LayoutDashboard, Monitor, Moon, Sun, ScrollText, Settings, Shield, ShieldCheck, Swords, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useConnectionStatus, useDecisionFeed } from "@/hooks/use-live";
 import { Addr, Chip, Dot } from "./ui";
@@ -24,6 +24,15 @@ export function Shell({ children }: { children: ReactNode }) {
   useDecisionFeed();
   useDemoShortcuts();
   const { demo, toggleDemo } = useStore();
+  const [light, setLight] = useState(false);
+  useEffect(() => setLight(document.documentElement.classList.contains("light")), []);
+  const toggleTheme = () => {
+    const next = !light;
+    document.documentElement.classList.toggle("light", next);
+    document.documentElement.classList.toggle("dark", !next);
+    localStorage.setItem("ws-theme", next ? "light" : "dark");
+    setLight(next);
+  };
   const [copied, setCopied] = useState(false);
   return (
     <div className="min-h-screen">
@@ -45,6 +54,9 @@ export function Shell({ children }: { children: ReactNode }) {
           <Chip tone="accent">Base Sepolia</Chip>
           <button onClick={toggleDemo} aria-pressed={demo} title={demo ? "Demo Mode on" : "Demo Mode off"} className={clsx("flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[10px] font-semibold transition", demo ? "border-accent bg-accent/15 text-accent shadow-[var(--glow)]" : "border-border text-muted-foreground hover:text-foreground")}>
             <Monitor className="h-3.5 w-3.5" />DEMO
+          </button>
+          <button onClick={toggleTheme} aria-label={light ? "Switch to dark theme" : "Switch to light theme"} title={light ? "Dark theme" : "Light theme"} className="rounded border p-1.5 text-muted-foreground transition hover:border-accent/50 hover:text-accent">
+            {light ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
           </button>
           <Settings className="ml-1 h-4 w-4 text-muted-foreground" />
         </div>
