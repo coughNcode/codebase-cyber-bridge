@@ -14,16 +14,40 @@ export const ATTACKS: Attack[] = [
 ];
 
 export const FEATURES: { name: string; info: string }[] = [
-  { name: "amount_ratio", info: "Requested amount divided by the agreed price" },
-  { name: "recipient_mismatch", info: "payTo differs from the registered merchant wallet" },
-  { name: "expiry_delta_s", info: "Seconds until the requirement expires" },
-  { name: "network_match", info: "Chain ID matches the trusted provider's network" },
-  { name: "merchant_seen_count", info: "How often this merchant has been paid before" },
-  { name: "inter_tx_ms", info: "Time since the previous payment" },
-  { name: "amount_delta_pct", info: "Change in amount versus the last payment" },
-  { name: "hour_of_day", info: "Hour the payment was requested" },
-  { name: "intent_fingerprint_valid", info: "Signed intent hash still matches the requirement" },
+  { name: "amount_ratio", info: "How large is this payment vs your daily budget limit?" },
+  { name: "recipient_mismatch", info: "Did the wallet address match your trusted registry?" },
+  { name: "expiry_delta_s", info: "How soon does this payment requirement expire?" },
+  { name: "network_match", info: "Is the payment on your approved blockchain network?" },
+  { name: "merchant_seen_count", info: "How many times have you paid this merchant before?" },
+  { name: "inter_tx_ms", info: "How quickly after the last payment is this one arriving?" },
+  { name: "amount_delta_pct", info: "How different is this amount from your recent average?" },
+  { name: "hour_of_day", info: "What UTC hour is this payment being made?" },
+  { name: "intent_fingerprint_valid", info: "Was the payment tampered with between approval and signing?" },
 ];
+
+/** Attack threshold per feature (normalized 0-1), drawn as the dashed radar polygon. */
+export const FEATURE_THRESHOLDS = [0.6, 0.5, 0.55, 0.5, 0.6, 0.55, 0.6, 0.5, 0.5];
+
+/** Normalized 0-1 risk contribution of each feature for one scored payment. */
+export function featureVector(d: SecurityDecision | undefined): number[] {
+  if (!d) return FEATURES.map(() => 0);
+  const s = d.ml_score;
+  const mismatch = d.expected_pay_to !== d.received_pay_to ? 1 : 0;
+  const r = d.reason ?? "";
+  const h = (n: number) => ((d.timestamp / 1000 + n * 7919) % 97) / 97;
+  const c = (v: number) => Math.max(0, Math.min(1, v));
+  return [
+    c(r === "OVERPAYMENT" || r === "BUDGET_EXCEEDED" ? 0.95 : d.amount * 8 + s * 0.2),
+    mismatch ? 0.95 : 0.05,
+    c(r === "EXPIRED" ? 0.9 : 0.15 + h(1) * 0.2),
+    r === "NETWORK_MISMATCH" ? 0.95 : 0.05,
+    c(s * 0.6 + h(2) * 0.2),
+    c(r === "REPLAY" || r === "PROBE_SEQUENCE" ? 0.85 : 0.1 + h(3) * 0.3),
+    c(s * 0.8 + h(4) * 0.15),
+    c(0.2 + h(5) * 0.4),
+    r === "INTENT_FINGERPRINT" ? 0.95 : 0.05,
+  ];
+}
 
 export const FEATURE_WEIGHTS = [0.21, 0.19, 0.06, 0.09, 0.07, 0.11, 0.12, 0.03, 0.12];
 
