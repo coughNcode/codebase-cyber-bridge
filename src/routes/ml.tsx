@@ -76,7 +76,7 @@ function MLGuard() {
             <ResponsiveContainer>
               <RadarChart data={radar} outerRadius="70%">
                 <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
+                <PolarAngleAxis dataKey="name" tick={{ fill: "var(--muted)", fontSize: 9, fontFamily: "IBM Plex Mono" }} />
                 <PolarRadiusAxis domain={[0, 1]} tick={false} axisLine={false} />
                 <Radar name="attack threshold" dataKey="threshold" stroke="var(--danger)" strokeDasharray="5 4" fill="none" strokeWidth={1.5} />
                 <Radar name="latest payment" dataKey="value" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.25} strokeWidth={2} />
