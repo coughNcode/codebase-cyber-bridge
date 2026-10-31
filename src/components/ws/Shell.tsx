@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useEffect, useState, type ReactNode } from "react";
-import { Activity, Brain, Copy, LayoutDashboard, ScrollText, Settings, Shield, ShieldCheck, Swords, X } from "lucide-react";
+import { Activity, Brain, Copy, LayoutDashboard, Monitor, ScrollText, Settings, Shield, ShieldCheck, Swords, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useConnectionStatus, useDecisionFeed } from "@/hooks/use-live";
 import { Addr, Chip, Dot } from "./ui";
+import { DemoBar, useDemoShortcuts } from "./Demo";
 
 const WALLET = "0x402f9c1e7a3b5d2e8c4a6f0d1b9e3c7aa1b2";
 const NAV = [
@@ -21,6 +22,8 @@ const BOOT_S = 4 * 3600 + 32 * 60 + 17;
 export function Shell({ children }: { children: ReactNode }) {
   useConnectionStatus();
   useDecisionFeed();
+  useDemoShortcuts();
+  const { demo, toggleDemo } = useStore();
   const [copied, setCopied] = useState(false);
   return (
     <div className="min-h-screen">
@@ -40,6 +43,9 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-2">
           <Chip tone="safe" className="px-2"><span className="relative inline-flex h-2 w-2"><span className="live-ring" /><span className="h-2 w-2 rounded-full bg-safe" /></span><span className="animate-blink">LIVE</span></Chip>
           <Chip tone="accent">Base Sepolia</Chip>
+          <button onClick={toggleDemo} aria-pressed={demo} title={demo ? "Demo Mode on" : "Demo Mode off"} className={clsx("flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[10px] font-semibold transition", demo ? "border-accent bg-accent/15 text-accent shadow-[var(--glow)]" : "border-border text-muted-foreground hover:text-foreground")}>
+            <Monitor className="h-3.5 w-3.5" />DEMO
+          </button>
           <Settings className="ml-1 h-4 w-4 text-muted-foreground" />
         </div>
       </header>
@@ -48,13 +54,14 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-[1400px] p-6">{children}</div>
       </main>
       <Toasts />
+      <DemoBar />
     </div>
   );
 }
 
 function Sidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { daemonOk, mlOk } = useStore();
+  const { daemonOk, mlOk, demo } = useStore();
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setInterval(() => setTick((n) => n + 1), 1000); return () => clearInterval(t); }, []);
   const up = BOOT_S + tick;
@@ -62,15 +69,24 @@ function Sidebar() {
   return (
     <aside className="fixed bottom-0 left-0 top-14 z-20 flex w-[220px] flex-col border-r bg-panel">
       <nav className="flex-1 space-y-0.5 p-3">
-        {NAV.map(({ to, label, icon: Icon }) => {
+        {NAV.map(({ to, label, icon: Icon }, i) => {
           const active = path === to;
           return (
             <Link key={to} to={to} className={clsx("flex items-center gap-3 rounded border-l-2 px-3 py-2 text-sm transition", active ? "nav-streak border-accent bg-accent/10 text-accent" : "border-transparent text-muted-foreground hover:bg-card hover:text-foreground")}>
               <Icon className="h-4 w-4" />{label}
+              {demo && <kbd className="ml-auto rounded border px-1.5 font-mono text-[10px] text-muted-foreground">{i + 1}</kbd>}
             </Link>
           );
         })}
       </nav>
+      {demo && (
+        <div className="mx-3 rounded border border-accent/30 bg-accent/5 p-2.5 font-mono text-[10px] text-muted-foreground">
+          <div className="mb-1.5 font-semibold tracking-widest text-accent">SHORTCUTS</div>
+          {[["1-6", "jump to page"], ["Space", "fire attack"], ["R", "run benchmark"], ["M", "retrain ML"]].map(([k, v]) => (
+            <div key={k} className="flex items-center justify-between py-0.5"><kbd className="rounded border bg-card px-1.5 text-foreground">{k}</kbd>{v}</div>
+          ))}
+        </div>
+      )}
       <div className="m-3 rounded border bg-card p-3">
         <div className="flex items-center gap-2 font-mono text-[11px] font-semibold text-safe"><Dot tone="safe" />FIREWALL ONLINE</div>
         <div className="mt-1 font-mono text-lg">{fmt}</div>

@@ -21,17 +21,21 @@ export function useConnectionStatus() {
   }, []);
 }
 
+/** Live feed cadence: every 2s in Demo Mode so the feed always looks busy. */
+export const feedInterval = (demo: boolean) => (demo ? 2000 : 4300);
+
 export function useDecisionFeed() {
+  const demo = useStore((s) => s.demo);
   useEffect(() => {
-    if (!MOCK) return;
+    if (!MOCK && !demo) return;
     if (!useStore.getState().decisions.length) seedDecisions(18).reverse().forEach(useStore.getState().addDecision);
     const t = setInterval(() => {
       const d = nextMockDecision();
       useStore.getState().addDecision(d);
       if (d.status === "BLOCKED") useStore.getState().toast(`Attack blocked: ${d.reason}`, "danger");
-    }, 4300);
+    }, feedInterval(demo));
     return () => clearInterval(t);
-  }, []);
+  }, [demo]);
 }
 
 export function useCountUp(target: number, ms = 900) {
