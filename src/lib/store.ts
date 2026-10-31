@@ -11,6 +11,12 @@ interface Store {
   lastRetrain: number | null;
   benchmark: BenchmarkRow[];
   toasts: Toast[];
+  demo: boolean;
+  demoBar: boolean;
+  labCmd: "fire" | "bench" | "retrain" | null;
+  toggleDemo: () => void;
+  hideDemoBar: () => void;
+  sendLabCmd: (c: "fire" | "bench" | "retrain" | null) => void;
   addDecision: (d: SecurityDecision) => void;
   clearDecisions: () => void;
   setConn: (daemonOk: boolean, mlOk: boolean) => void;
@@ -29,6 +35,12 @@ export const useStore = create<Store>((set, get) => ({
   lastRetrain: null,
   benchmark: [],
   toasts: [],
+  demo: false,
+  demoBar: true,
+  labCmd: null,
+  toggleDemo: () => set((s) => ({ demo: !s.demo, demoBar: true })),
+  hideDemoBar: () => set({ demoBar: false }),
+  sendLabCmd: (labCmd) => set({ labCmd }),
   addDecision: (d) => set((s) => ({ decisions: [d, ...s.decisions].slice(0, 300) })),
   clearDecisions: () => set({ decisions: [] }),
   setConn: (daemonOk, mlOk) => set({ daemonOk, mlOk }),

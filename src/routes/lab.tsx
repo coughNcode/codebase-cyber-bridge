@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, ShieldCheck, Swords, Trophy } from "lucide-react";
 import { ATTACKS } from "@/lib/mock";
 import { postRetrain } from "@/lib/api";
@@ -98,6 +98,21 @@ function Lab() {
     setHot();
     toast("Model upgraded: IsolationForest -> XGBClassifier", "ml");
   };
+
+  // Demo Mode keyboard commands (Space / R / M) arrive through the store.
+  const labCmd = useStore((s) => s.labCmd);
+  const busy = useRef(false);
+  busy.current = firing || running || retrain !== null;
+  useEffect(() => {
+    if (!labCmd) return;
+    useStore.getState().sendLabCmd(null);
+    if (busy.current) return;
+    if (labCmd === "fire") fire();
+    else if (labCmd === "bench") bench();
+    else if (hot) toast("ML Guard is already HOT", "ml");
+    else if (benchmark.length !== ATTACKS.length) toast("Run the benchmark (R) before retraining", "ml");
+    else doRetrain();
+  }, [labCmd]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const caught = benchmark.filter((r) => r.result === "BLOCKED").length;
   const done = benchmark.length === ATTACKS.length && !running;

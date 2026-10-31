@@ -172,3 +172,13 @@
 @utility animate-shield-amber { animation: shield-amber 450ms ease-out; }
 @utility animate-tier-pop { animation: tier-pop 600ms cubic-bezier(.34,1.56,.64,1) both; }
 @utility animate-row-in { animation: row-in 250ms ease-out both; }
+
+/* --- demo mode --- */
+@utility demo-bar {
+  background: color-mix(in oklab, var(--terminal) 85%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -8px 30px oklch(0 0 0 / 50%);
+}
+@keyframes slide-up { from { transform: translateY(100%) } to { transform: none } }
+@utility animate-slide-up { animation: slide-up 250ms ease-out both; }
+@media print { .demo-bar { display: none } }
