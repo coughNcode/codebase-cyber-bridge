@@ -37,7 +37,7 @@ export function simulate(id: string, hot: boolean): BenchmarkRow {
 }
 
 function logLines(r: BenchmarkRow) {
-  return [`> firing: ${r.attack}...`, `  [${r.result}] ${r.result === "BLOCKED" ? r.reason : "--"} -- ${r.latency}ms`];
+  return [`> firing: ${r.attack}...`, `  [${r.result}] ${ATTACKS.find((a) => a.id === r.attack)?.reason ?? r.reason} -- ${r.latency}ms`];
 }
 
 export function tierFor(caught: number) {
@@ -133,7 +133,7 @@ function Lab() {
             <Btn tone="ml" className="py-3" onClick={bench} disabled={running}>Run Full Benchmark (10/10)</Btn>
           </div>
           {(running || progress > 0) && <div className="mt-3"><Progress value={progress} tone="ml" /></div>}
-          <div ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }} className="terminal mt-3 h-48 overflow-y-auto rounded border p-3 font-mono text-[11px] leading-5">
+          <div ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }} className="terminal mt-3 h-48 overflow-y-auto whitespace-pre rounded border p-3 font-mono text-[11px] leading-5">
             {log.length ? log.map((l, i) => <div key={i} className={l.includes("[PASSED]") ? "text-danger" : l.includes("[BLOCKED]") ? "text-safe" : "text-muted-foreground"}>{l}</div>) : <span className="text-muted-foreground">// attack log empty</span>}
           </div>
         </Card>
