@@ -47,6 +47,7 @@
   --foreground: oklch(0.91 0.018 265);
   --muted: oklch(0.52 0.05 265);
   --accent: oklch(0.77 0.15 225);
+  --grid-line: oklch(0.255 0.03 262); /* #1e2535 */
   --safe: oklch(0.88 0.22 155);
   --danger: oklch(0.65 0.24 10);
   --warn: oklch(0.82 0.14 65);
@@ -106,11 +107,10 @@
     pointer-events: none;
     opacity: 0.08;
     background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
     background-size: 40px 40px;
     animation: grid-drift 30s linear infinite;
-    filter: brightness(2.2);
   }
 }
 @utility neon-text { text-shadow: 0 0 14px color-mix(in oklab, var(--accent) 70%, transparent); }
@@ -146,7 +146,7 @@
     top: 20%;
     height: 60%;
     width: 2px;
-    background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+    background: linear-gradient(to bottom, var(--accent), transparent);
     box-shadow: 0 0 8px var(--accent);
   }
 }
